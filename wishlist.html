@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PetShop — Wishlist</title>
+  <meta name="description" content="Your saved pet products at PetShop.lk. — Sri Lanka's trusted pet supplies store." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/site-cart.css" />
+  <link rel="stylesheet" href="css/site-pages.css" />
+  <style>
+    :root {
+      --background: 210 20% 98%; --foreground: 220 20% 15%; --card: 0 0% 100%;
+      --primary: 28 100% 50%; --primary-foreground: 0 0% 100%; --secondary: 220 14% 96%;
+      --muted-foreground: 220 9% 46%; --accent: 28 100% 95%; --border: 220 13% 91%;
+      --font-heading: "Poppins", sans-serif; --font-body: "Inter", sans-serif;
+      --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+      --shadow-card-hover: 0 10px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+      --shadow-elevated: 0 20px 40px -12px rgb(0 0 0 / 0.15);
+    }
+    *, *::before, *::after { box-sizing: border-box; border-color: hsl(var(--border)); }
+    body { margin: 0; font-family: var(--font-body); background: hsl(var(--background)); color: hsl(var(--foreground)); -webkit-font-smoothing: antialiased; }
+    h1, h2, h3 { font-family: var(--font-heading); }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+    img { max-width: 100%; height: auto; display: block; }
+    .container { width: 100%; max-width: 1400px; margin: 0 auto; padding: 0 1rem; }
+    .relative { position: relative; }
+    .site-nav { position: sticky; top: 0; z-index: 50; background: hsl(var(--card)); box-shadow: var(--shadow-card); transition: background 0.3s, box-shadow 0.3s; }
+    .site-nav.scrolled { background: hsl(var(--card) / 0.95); backdrop-filter: blur(12px); box-shadow: var(--shadow-card-hover); }
+    .nav-top { background: hsl(var(--primary)); text-align: center; padding: 0.375rem 1rem; }
+    .nav-top p { margin: 0; font-size: 0.875rem; font-weight: 500; color: hsl(var(--primary-foreground)); }
+    .nav-row { display: flex; align-items: center; justify-content: space-between; height: 4rem; gap: 0.5rem; }
+    .logo-text { font-size: 1.25rem; font-family: var(--font-heading); font-weight: 700; }
+    .logo-text .accent { color: hsl(var(--primary)); }
+    .desktop-menu { display: none; align-items: center; gap: 0.125rem; flex-wrap: wrap; }
+    @media (min-width: 1024px) { .desktop-menu { display: flex; } }
+    .nav-icons { display: flex; align-items: center; gap: 0.5rem; }
+    .icon-btn { padding: 0.5rem; border-radius: 0.75rem; transition: background 0.2s, transform 0.2s; }
+    .icon-btn:hover { background: hsl(var(--secondary)); transform: scale(1.06); }
+    .cart-badge, .wishlist-badge-nav { position: absolute; top: -2px; right: -2px; min-width: 1.25rem; height: 1.25rem; border-radius: 9999px; background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); font-size: 0.625rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .wishlist-badge-nav[hidden] { display: none; }
+    .mobile-toggle { display: flex; }
+    @media (min-width: 1024px) { .mobile-toggle { display: none; } }
+    .mobile-panel { max-height: 0; overflow: hidden; opacity: 0; border-top: 1px solid hsl(var(--border)); background: hsl(var(--card)); transition: max-height 0.35s, opacity 0.25s; }
+    .mobile-panel.is-open { max-height: 420px; opacity: 1; }
+    .mobile-panel-inner { padding: 1rem; display: flex; flex-direction: column; gap: 0.35rem; }
+    .mobile-panel a { padding: 0.75rem 1rem; border-radius: 0.75rem; font-size: 0.875rem; font-weight: 500; }
+    .mobile-panel a:hover, .mobile-panel a[aria-current="page"] { background: hsl(var(--accent)); color: hsl(var(--primary)); font-weight: 700; }
+    .cart-backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / 0.5); z-index: 60; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .cart-backdrop.is-open { opacity: 1; pointer-events: auto; }
+    .cart-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 100%; max-width: 28rem; background: hsl(var(--card)); border-left: 1px solid hsl(var(--border)); z-index: 70; display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.4s; }
+    .cart-drawer.is-open { transform: translateX(0); }
+    .cart-head { display: flex; align-items: center; justify-content: space-between; padding: 1rem; border-bottom: 1px solid hsl(var(--border)); }
+    .cart-head h2 { margin: 0; font-size: 1.125rem; font-weight: 600; }
+    .cart-body { flex: 1; overflow-y: auto; padding: 1rem; }
+    .cart-foot { border-top: 1px solid hsl(var(--border)); padding: 1rem; }
+    .btn-outline-nav, .btn-primary-nav { flex: 1; text-align: center; padding: 0.625rem; border-radius: 0.75rem; font-size: 0.875rem; font-weight: 500; }
+    .btn-outline-nav { border: 1px solid hsl(var(--border)); }
+    .btn-primary-nav { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+    .cart-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+    .site-footer { background: hsl(var(--foreground)); color: hsl(var(--primary-foreground)); padding: 3rem 0; }
+    .footer-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; }
+    @media (min-width: 768px) { .footer-grid { grid-template-columns: repeat(4, 1fr); } }
+    .site-footer h4 { font-size: 0.875rem; font-weight: 600; margin: 0 0 1rem; }
+    .site-footer ul { list-style: none; padding: 0; margin: 0; }
+    .site-footer li { margin-bottom: 0.5rem; }
+    .site-footer a { font-size: 0.875rem; opacity: 0.7; }
+    .site-footer a:hover { opacity: 1; }
+    .footer-bottom { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid hsl(var(--primary-foreground) / 0.1); text-align: center; }
+    .footer-bottom p { margin: 0; font-size: 0.75rem; opacity: 0.6; }
+    .cta-banner {
+      margin-top: 2rem; padding: 2rem; border-radius: 1.25rem; text-align: center;
+      background: linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--accent)));
+      border: 1px solid hsl(var(--border) / 0.5);
+    }
+    .cta-banner h2 { margin: 0 0 0.5rem; }
+    .cta-banner p { margin: 0 0 1.25rem; color: hsl(var(--muted-foreground)); }
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true" style="position:absolute;overflow:hidden">
+    <defs>
+      <symbol id="icon-cart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></symbol>
+      <symbol id="icon-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+      <symbol id="icon-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></symbol>
+      <symbol id="icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></symbol>
+      <symbol id="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+      <symbol id="icon-truck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></symbol>
+      <symbol id="icon-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></symbol>
+      <symbol id="icon-heart-hand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></symbol>
+      <symbol id="icon-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    </defs>
+  </svg>
+
+  <nav class="site-nav" id="siteNav" aria-label="Main">
+    <div class="nav-top"><div class="container"><p>🐾 Free delivery on orders over Rs. 5,000 | Island-wide delivery 🐾</p></div></div>
+    <div class="container">
+      <div class="nav-row">
+        <a href="index.html" class="logo"><span style="font-size:1.5rem;line-height:1">🐾</span><span class="logo-text">Pet<span class="accent">Shop</span></span></a>
+        <div class="desktop-menu">
+          <a href="index.html" class="nav-link-simple">Home</a>
+          <a href="shop.html" class="nav-link-simple">Shop</a>
+          </div>
+        <div class="nav-icons">
+          <button type="button" class="icon-btn relative" id="openCart" aria-label="Open cart"><svg width="20" height="20"><use href="#icon-cart"/></svg><span class="cart-badge" id="cartBadge">0</span></button>
+          <button type="button" class="icon-btn mobile-toggle" id="mobileToggle" aria-expanded="false" aria-label="Menu"><span id="menuIcon"><svg width="20" height="20"><use href="#icon-menu"/></svg></span><span id="closeIcon" hidden><svg width="20" height="20"><use href="#icon-x"/></svg></span></button>
+        </div>
+      </div>
+    </div>
+    <div class="mobile-panel" id="mobilePanel" aria-hidden="true">
+      <div class="mobile-panel-inner">
+        <a href="index.html">Home</a>
+        <a href="shop.html">Shop</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="cart-backdrop" id="cartBackdrop"></div>
+  <aside class="cart-drawer" id="cartDrawer" role="dialog" aria-modal="true" aria-label="Cart" hidden>
+    <div class="cart-head"><h2>Your Cart</h2><button type="button" class="icon-btn" id="closeCart" aria-label="Close"><svg width="20" height="20"><use href="#icon-x"/></svg></button></div>
+    <div class="cart-body" id="cartBody"></div>
+    <div class="cart-foot" id="cartFoot"></div>
+  </aside>
+
+  <header class="page-hero">
+    <div class="container page-hero-inner">
+      <nav class="page-breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Home</a><span class="sep">/</span><span aria-current="page">Wishlist</span>
+      </nav>
+      <h1>My <span style="color:hsl(var(--primary))">Wishlist</span></h1>
+      <p class="page-hero-lead">Products you've saved for later — add them to cart when you're ready.</p>
+    </div>
+  </header>
+
+  <main class="container page-main">
+    <div id="wishlistRoot" aria-live="polite"></div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div><div class="logo-text" style="color:inherit;margin-bottom:0.75rem">🐾 PetShop</div><p style="font-size:0.875rem;opacity:0.7;margin:0">Quality pet products, delivered island-wide.</p></div>
+        <div><h4>Navigation</h4><ul><li><a href="index.html">Home</a></li><li><a href="shop.html">Shop</a></li><li><a href="index.html#flash-sale">Deals</a></li></ul></div>
+        <div><h4>Company</h4><ul><li><a href="about.html">About Us</a></li><li><a href="contact.html">Contact Us</a></li><li><a href="wishlist.html">Wishlist</a></li><li><a href="login.html">Login</a></li></ul></div>
+        <div><h4>Help</h4><ul><li><a href="contact.html">Support</a></li><li><a href="checkout.html">Checkout</a></li></ul></div>
+      </div>
+      <div class="footer-bottom"><p>© 2026 PetShop. All rights reserved.</p></div>
+    </div>
+  </footer>
+
+  <script src="js/products-data.js"></script>
+  <script src="js/wishlist.js"></script>
+  <script src="js/cart.js"></script>
+  <script>
+  (function () {
+    var nav = document.getElementById("siteNav");
+    window.addEventListener("scroll", function () { nav.classList.toggle("scrolled", window.scrollY > 8); }, { passive: true });
+    var panel = document.getElementById("mobilePanel");
+    var toggle = document.getElementById("mobileToggle");
+    var menuIcon = document.getElementById("menuIcon");
+    var closeIcon = document.getElementById("closeIcon");
+    toggle.addEventListener("click", function () {
+      var open = panel.classList.toggle("is-open");
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      panel.setAttribute("aria-hidden", open ? "false" : "true");
+      menuIcon.hidden = open;
+      closeIcon.hidden = !open;
+    });
+  })();
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function renderWishlist() {
+    var root = document.getElementById("wishlistRoot");
+    var products = window.PetshopWishlist.getProducts();
+    if (!products.length) {
+      root.innerHTML = '<div class="wishlist-empty"><svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg><h2>Your wishlist is empty</h2><p>Tap the heart on any product while shopping to save it here.</p><a href="shop.html" class="btn-primary" style="display:inline-flex;width:auto;padding:0.75rem 1.5rem">Browse shop</a></div>';
+      return;
+    }
+    root.innerHTML = '<div class="wishlist-grid">' + products.map(function (p) {
+      return '<article class="wishlist-card" data-id="' + p.id + '">' +
+        '<div class="wishlist-card-img"><a href="product.html?id=' + p.id + '"><img src="' + escapeHtml(p.image) + '" alt="' + escapeHtml(p.name) + '" loading="lazy" /></a>' +
+        '<button type="button" class="wishlist-remove" data-remove="' + p.id + '" aria-label="Remove from wishlist"><svg width="16" height="16"><use href="#icon-x"/></svg></button></div>' +
+        '<div class="wishlist-card-body"><p class="brand">' + escapeHtml(p.brand) + '</p><h3><a href="product.html?id=' + p.id + '">' + escapeHtml(p.name) + '</a></h3>' +
+        '<p class="price">Rs. ' + p.price.toLocaleString() + '</p>' +
+        '<div class="wishlist-card-actions"><button type="button" class="btn-primary btn-wishlist-cart" data-cart="' + p.id + '">Add to cart</button>' +
+        '<a href="product.html?id=' + p.id + '" class="btn-outline" style="text-align:center">View details</a></div></div></article>';
+    }).join("") + "</div>";
+  }
+  renderWishlist();
+  document.addEventListener("petshop-wishlist-updated", renderWishlist);
+  document.getElementById("wishlistRoot").addEventListener("click", function (e) {
+    var rm = e.target.closest("[data-remove]");
+    if (rm) { window.PetshopWishlist.remove(rm.getAttribute("data-remove")); return; }
+    var cart = e.target.closest("[data-cart]");
+    if (cart && window.PetshopCart) {
+      var p = window.PetshopWishlist.findProduct(cart.getAttribute("data-cart"));
+      if (p) window.PetshopCart.add(p, 1);
+    }
+  });
+  </script>
+</body>
+</html>

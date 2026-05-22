@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PetShop — Checkout</title>
+  <meta name="description" content="Complete your order — PetShop.lk" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/site-cart.css" />
+  <style>
+    :root {
+      --background: 210 20% 98%;
+      --foreground: 220 20% 15%;
+      --card: 0 0% 100%;
+      --primary: 28 100% 50%;
+      --primary-foreground: 0 0% 100%;
+      --secondary: 220 14% 96%;
+      --muted-foreground: 220 9% 46%;
+      --accent: 28 100% 95%;
+      --destructive: 0 84% 60%;
+      --border: 220 13% 91%;
+      --font-heading: "Poppins", sans-serif;
+      --font-body: "Inter", sans-serif;
+      --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+      --shadow-elevated: 0 20px 40px -12px rgb(0 0 0 / 0.15);
+    }
+    *, *::before, *::after { box-sizing: border-box; border-color: hsl(var(--border)); }
+    body { margin: 0; font-family: var(--font-body); background: hsl(var(--background)); color: hsl(var(--foreground)); -webkit-font-smoothing: antialiased; }
+    h1, h2, h3 { font-family: var(--font-heading); }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+    img { max-width: 100%; height: auto; display: block; }
+    .container { width: 100%; max-width: 1400px; margin: 0 auto; padding: 0 1rem; }
+    .logo-text { font-size: 1.25rem; font-family: var(--font-heading); font-weight: 700; }
+    .logo-text .accent { color: hsl(var(--primary)); }
+    .icon-btn { padding: 0.5rem; border-radius: 0.75rem; transition: background 0.2s; position: relative; }
+    .icon-btn:hover { background: hsl(var(--secondary)); }
+    .cart-badge {
+      position: absolute; top: -2px; right: -2px; width: 1.25rem; height: 1.25rem; border-radius: 9999px;
+      background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); font-size: 0.625rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cart-backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / 0.5); z-index: 60; backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .cart-backdrop.is-open { opacity: 1; pointer-events: auto; }
+    .cart-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0; width: 100%; max-width: 28rem; background: hsl(var(--card));
+      border-left: 1px solid hsl(var(--border)); box-shadow: var(--shadow-elevated); z-index: 70;
+      display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .cart-drawer.is-open { transform: translateX(0); }
+    .cart-head { display: flex; align-items: center; justify-content: space-between; padding: 1rem; border-bottom: 1px solid hsl(var(--border)); }
+    .cart-head h2 { margin: 0; font-size: 1.125rem; font-weight: 600; }
+    .cart-body { flex: 1; overflow-y: auto; padding: 1rem; }
+    .cart-foot { border-top: 1px solid hsl(var(--border)); padding: 1rem; }
+    .cart-item { display: flex; gap: 0.75rem; padding: 0.75rem; border-radius: 0.75rem; background: hsl(var(--secondary) / 0.5); border: 1px solid hsl(var(--border) / 0.5); margin-bottom: 1rem; }
+    .cart-item img { width: 4rem; height: 4rem; border-radius: 0.5rem; object-fit: cover; flex-shrink: 0; }
+    .cart-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+    .btn-outline-nav { flex: 1; text-align: center; padding: 0.625rem; border-radius: 0.75rem; border: 1px solid hsl(var(--border)); font-size: 0.875rem; font-weight: 500; }
+    .btn-primary-nav { flex: 1; text-align: center; padding: 0.625rem; border-radius: 0.75rem; background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); font-size: 0.875rem; font-weight: 500; }
+    .site-footer { background: hsl(220 20% 12%); color: hsl(0 0% 95%); margin-top: 2rem; }
+    .footer-inner { padding: 2.5rem 0; display: grid; gap: 2rem; }
+    @media (min-width: 768px) { .footer-inner { grid-template-columns: 1.2fr 1fr 1fr; } }
+    .site-footer h4 { margin: 0 0 0.75rem; font-size: 0.9375rem; }
+    .site-footer ul { list-style: none; margin: 0; padding: 0; }
+    .site-footer li { margin-bottom: 0.35rem; }
+    .site-footer a { font-size: 0.875rem; opacity: 0.85; }
+    .site-footer a:hover { opacity: 1; color: hsl(var(--primary)); }
+    .footer-bottom { border-top: 1px solid hsl(0 0% 100% / 0.1); padding: 1rem 0; font-size: 0.8125rem; opacity: 0.7; text-align: center; }
+    .checkout-step-icon svg { width: 1rem; height: 1rem; }
+  </style>
+</head>
+<body id="top" class="checkout-body">
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true" style="position:absolute;overflow:hidden">
+    <defs>
+      <symbol id="icon-cart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></symbol>
+      <symbol id="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+      <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></symbol>
+      <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></symbol>
+      <symbol id="icon-location" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+      <symbol id="icon-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="checkout-header site-nav">
+    <div class="checkout-header-inner container">
+      <a href="index.html" class="logo" title="Back to home">
+        <span style="font-size:1.5rem;line-height:1">🐾</span>
+        <span class="logo-text">Pet<span class="accent">Shop</span></span>
+      </a>
+      <button type="button" class="icon-btn" id="openCart" aria-label="Open cart">
+        <svg width="22" height="22"><use href="#icon-cart"/></svg>
+        <span class="cart-badge" id="cartBadge">0</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="checkout-page" aria-label="Checkout">
+      <div class="container">
+        <nav class="checkout-page-breadcrumb" aria-label="Breadcrumb">
+          <ol class="checkout-breadcrumb-list">
+            <li><a href="index.html">Home</a></li>
+            <li class="checkout-breadcrumb-sep" aria-hidden="true">/</li>
+            <li><a href="shop.html">Shop</a></li>
+            <li class="checkout-breadcrumb-sep" aria-hidden="true">/</li>
+            <li><span aria-current="page">Checkout</span></li>
+          </ol>
+        </nav>
+
+        <ol class="checkout-steps" aria-label="Checkout progress">
+          <li class="checkout-step checkout-step--done" data-checkout-step="review">
+            <span class="checkout-step-icon" aria-hidden="true"><svg><use href="#icon-check"/></svg></span>
+            <span class="checkout-step-label">Review order</span>
+          </li>
+          <li class="checkout-step-sep checkout-step-sep--done" aria-hidden="true"></li>
+          <li class="checkout-step checkout-step--current" data-checkout-step="address" aria-current="step">
+            <span class="checkout-step-icon" aria-hidden="true"><svg><use href="#icon-location"/></svg></span>
+            <span class="checkout-step-label">Address</span>
+          </li>
+          <li class="checkout-step-sep" aria-hidden="true"></li>
+          <li class="checkout-step checkout-step--pending" data-checkout-step="confirm">
+            <span class="checkout-step-icon" aria-hidden="true"><span class="checkout-step-num">3</span></span>
+            <span class="checkout-step-label">Confirm order</span>
+          </li>
+        </ol>
+
+        <div class="checkout-layout" data-checkout-app>
+          <div class="checkout-main">
+            <div class="checkout-panel" data-checkout-panel="address">
+              <div class="checkout-card">
+                <h2 class="checkout-card-title">Your address</h2>
+                <p class="checkout-card-hint">Required fields are marked with *</p>
+                <form id="checkout-address-form" class="checkout-form-grid" action="#" method="post" novalidate>
+                  <div class="checkout-field">
+                    <label for="co-first">First name <span class="checkout-req">*</span></label>
+                    <input id="co-first" name="firstName" type="text" autocomplete="given-name" required placeholder="First name" />
+                  </div>
+                  <div class="checkout-field">
+                    <label for="co-last">Last name <span class="checkout-req">*</span></label>
+                    <input id="co-last" name="lastName" type="text" autocomplete="family-name" required placeholder="Last name" />
+                  </div>
+                  <div class="checkout-field">
+                    <label for="co-email">Email <span class="checkout-req">*</span></label>
+                    <input id="co-email" name="email" type="email" autocomplete="email" required placeholder="you@email.com" />
+                  </div>
+                  <div class="checkout-field">
+                    <label for="co-phone">Phone <span class="checkout-req">*</span></label>
+                    <div class="checkout-phone-row">
+                      <div class="checkout-phone-country" title="Country code">
+                        <span aria-hidden="true">🇱🇰</span>
+                        <select class="checkout-country-select" name="phonePrefix" aria-label="Country code">
+                          <option value="+94" selected>+94</option>
+                        </select>
+                      </div>
+                      <input id="co-phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" required placeholder="77 000 0000" aria-label="Phone number" />
+                    </div>
+                  </div>
+                  <div class="checkout-field checkout-field--full">
+                    <label for="co-company">Company name</label>
+                    <input id="co-company" name="company" type="text" autocomplete="organization" placeholder="Optional" />
+                  </div>
+                  <div class="checkout-field checkout-field--full">
+                    <label for="co-tin">TIN / VAT</label>
+                    <input id="co-tin" name="tin" type="text" placeholder="Optional" />
+                  </div>
+                  <div class="checkout-field checkout-field--full">
+                    <label for="co-street1">Street and number <span class="checkout-req">*</span></label>
+                    <input id="co-street1" name="street1" type="text" autocomplete="address-line1" required placeholder="Street and number" />
+                  </div>
+                  <div class="checkout-field checkout-field--full">
+                    <label for="co-street2">Street 2</label>
+                    <input id="co-street2" name="street2" type="text" autocomplete="address-line2" placeholder="Apartment, suite, etc." />
+                  </div>
+                  <div class="checkout-field">
+                    <label for="co-city">City <span class="checkout-req">*</span></label>
+                    <input id="co-city" name="city" type="text" autocomplete="address-level2" required placeholder="City" />
+                  </div>
+                  <div class="checkout-field">
+                    <label for="co-zip">Zip code <span class="checkout-req">*</span></label>
+                    <input id="co-zip" name="zip" type="text" autocomplete="postal-code" required placeholder="Zip code" />
+                  </div>
+                  <div class="checkout-field checkout-field--full checkout-field--checkbox">
+                    <label class="checkout-checkbox-label">
+                      <input type="checkbox" name="shipSame" value="1" checked />
+                      <span>Ship to the same address</span>
+                    </label>
+                  </div>
+                  <div class="checkout-actions checkout-field--full">
+                    <button type="button" class="checkout-btn" id="checkout-continue">Continue to confirm order</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <div class="checkout-panel" data-checkout-panel="confirm" hidden>
+              <div class="checkout-card">
+                <h2 class="checkout-card-title">Confirm order</h2>
+                <div class="checkout-confirm-block">
+                  <div class="checkout-billing-head">
+                    <h3 class="checkout-confirm-sub">Billing &amp; shipping</h3>
+                    <button type="button" class="checkout-edit-btn" id="checkout-edit-address">
+                      <svg width="16" height="16"><use href="#icon-edit"/></svg>
+                      <span>Edit</span>
+                    </button>
+                  </div>
+                  <p class="checkout-confirm-text" data-confirm-billing></p>
+                </div>
+                <div class="checkout-confirm-block">
+                  <h3 class="checkout-confirm-sub">Delivery method</h3>
+                  <ul class="checkout-option-list">
+                    <li>
+                      <label class="checkout-option">
+                        <input type="radio" name="delivery" value="400" data-label="Outer Colombo" checked />
+                        <span class="checkout-option-body">
+                          <span class="checkout-option-title">Outer Colombo</span>
+                          <span class="checkout-option-price">Rs 400.00</span>
+                        </span>
+                      </label>
+                    </li>
+                    <li>
+                      <label class="checkout-option">
+                        <input type="radio" name="delivery" value="400" data-label="Remote area" />
+                        <span class="checkout-option-body">
+                          <span class="checkout-option-title">Remote area charges</span>
+                          <span class="checkout-option-price">Rs 400.00</span>
+                        </span>
+                      </label>
+                    </li>
+                    <li>
+                      <label class="checkout-option">
+                        <input type="radio" name="delivery" value="0" data-label="Store pick-up" />
+                        <span class="checkout-option-body">
+                          <span class="checkout-option-title">Store pick-up</span>
+                          <span class="checkout-option-price">Free</span>
+                        </span>
+                      </label>
+                    </li>
+                  </ul>
+                </div>
+                <div class="checkout-confirm-block">
+                  <h3 class="checkout-confirm-sub">Pay with</h3>
+                  <ul class="checkout-option-list">
+                    <li>
+                      <label class="checkout-option">
+                        <input type="radio" name="pay" value="cod" data-pay-label="Cash on Delivery" checked />
+                        <span class="checkout-option-body"><span class="checkout-option-title">Cash on Delivery</span></span>
+                      </label>
+                    </li>
+                    <li>
+                      <label class="checkout-option">
+                        <input type="radio" name="pay" value="bank" data-pay-label="Bank transfer" />
+                        <span class="checkout-option-body"><span class="checkout-option-title">Bank transfer</span></span>
+                      </label>
+                    </li>
+                  </ul>
+                  <p class="checkout-muted">Use your order reference when paying by bank transfer.</p>
+                </div>
+                <p class="checkout-policies"><a href="#">Return, refund &amp; cancellation policies</a></p>
+                <div class="checkout-actions">
+                  <button type="button" class="checkout-btn" id="checkout-pay">Place order</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="checkout-panel" data-checkout-panel="paid" hidden>
+              <div class="checkout-card">
+                <h2 class="checkout-paid-title" data-paid-order-id>Order S00000</h2>
+                <div class="checkout-confirm-block">
+                  <h3 class="checkout-confirm-sub">Payment information</h3>
+                  <table class="checkout-paid-table">
+                    <tbody>
+                      <tr>
+                        <td data-paid-paymethod>Cash on Delivery</td>
+                        <td class="checkout-paid-muted">Total:</td>
+                        <td class="checkout-paid-total" data-paid-total>Rs 0.00</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <p class="checkout-muted">Please use the order name as your payment reference.</p>
+                  <p class="checkout-paid-comm"><span class="checkout-paid-muted">Reference:</span> <span data-paid-communication></span></p>
+                </div>
+                <div class="checkout-confirm-block">
+                  <h3 class="checkout-confirm-sub">Billing &amp; shipping</h3>
+                  <p class="checkout-confirm-text" data-paid-billing></p>
+                </div>
+                <a href="index.html" class="checkout-btn checkout-done-btn">Back to home</a>
+              </div>
+            </div>
+          </div>
+
+          <aside class="order-summary checkout-card" aria-label="Order summary">
+            <h2 class="order-summary-title">Order summary</h2>
+            <div class="checkout-items-scroll">
+              <div data-checkout-items></div>
+            </div>
+            <div data-checkout-totals></div>
+            <p class="checkout-hint-muted"><a href="shop.html">← Back to shop</a> to add more items.</p>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>
+        <a href="index.html" class="logo-text" style="color:#fff">Pet<span class="accent">Shop</span></a>
+        <p style="font-size:0.875rem;opacity:0.75;margin:0.75rem 0 0">Premium pet supplies — island-wide delivery.</p>
+      </div>
+      <div>
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="shop.html">All products</a></li>
+          <li><a href="shop.html">Dogs</a></li>
+          <li><a href="shop.html">Cats</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Support</h4>
+        <ul>
+          <li><a href="mailto:support@petshop.lk">support@petshop.lk</a></li>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="contact.html">Contact Us</a></li>
+          <li><a href="wishlist.html">Wishlist</a></li>
+          <li><a href="login.html">Login</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom container">© 2026 PetShop. All rights reserved.</div>
+  </footer>
+
+  <div class="cart-backdrop" id="cartBackdrop"></div>
+  <aside class="cart-drawer" id="cartDrawer" role="dialog" aria-modal="true" aria-label="Cart preview" hidden>
+    <div class="cart-head">
+      <h2>Your Cart</h2>
+      <button type="button" class="icon-btn" id="closeCart" aria-label="Close cart"><svg width="20" height="20"><use href="#icon-x"/></svg></button>
+    </div>
+    <div class="cart-body" id="cartBody"></div>
+    <div class="cart-foot" id="cartFoot"></div>
+  </aside>
+
+  <script src="js/products-data.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/checkout.js"></script>
+</body>
+</html>
